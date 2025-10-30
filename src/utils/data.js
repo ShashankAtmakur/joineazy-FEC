@@ -27,7 +27,7 @@ const initial = {
   submissions: [
     // each entry {assignmentId, studentId, submitted:false, confirmed:false, timestamp}
     { assignmentId: 'as1', studentId: 's1', submitted: false, confirmed: false, timestamp: null, submissionLink: null },
-    { assignmentId: 'as1', studentId: 's2', submitted: true, confirmed: true, timestamp: Date.now() - 1000*60*60*24, submissionLink: 'https://drive.google.com/example-submission-s2' },
+    { assignmentId: 'as1', studentId: 's2', submitted: false, confirmed: false, timestamp: Date.now() - 1000*60*60*24, submissionLink: 'https://drive.google.com/example-submission-s2' },
     { assignmentId: 'as2', studentId: 's1', submitted: true, confirmed: false, timestamp: Date.now() - 1000*60*60, submissionLink: null }
   ]
 }
