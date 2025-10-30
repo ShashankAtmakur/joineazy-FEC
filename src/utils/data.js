@@ -26,9 +26,9 @@ const initial = {
   ],
   submissions: [
     // each entry {assignmentId, studentId, submitted:false, confirmed:false, timestamp}
-    { assignmentId: 'as1', studentId: 's1', submitted: false, confirmed: false, timestamp: null },
-    { assignmentId: 'as1', studentId: 's2', submitted: true, confirmed: true, timestamp: Date.now() - 1000*60*60*24 },
-    { assignmentId: 'as2', studentId: 's1', submitted: true, confirmed: false, timestamp: Date.now() - 1000*60*60 }
+    { assignmentId: 'as1', studentId: 's1', submitted: false, confirmed: false, timestamp: null, submissionLink: null },
+    { assignmentId: 'as1', studentId: 's2', submitted: true, confirmed: true, timestamp: Date.now() - 1000*60*60*24, submissionLink: 'https://drive.google.com/example-submission-s2' },
+    { assignmentId: 'as2', studentId: 's1', submitted: true, confirmed: false, timestamp: Date.now() - 1000*60*60, submissionLink: null }
   ]
 }
 
@@ -77,6 +77,7 @@ export function updateSubmission(updated) {
     s.submissions.push(updated)
   }
   localStorage.setItem(STORAGE_KEY, JSON.stringify(s))
+  emitUpdate()
 }
 
 export function addAssignment(assignment) {
@@ -87,4 +88,41 @@ export function addAssignment(assignment) {
     s.submissions.push({ assignmentId: assignment.id, studentId: stId, submitted: false, confirmed: false, timestamp: null })
   })
   localStorage.setItem(STORAGE_KEY, JSON.stringify(s))
+  emitUpdate()
+}
+
+function emitUpdate() {
+  try {
+    window.dispatchEvent(new Event('joineazy:update'))
+  } catch (e) {
+    // no-op in non-browser environments
+  }
+}
+
+export function addUser(user) {
+  const s = loadState()
+  s.users.push(user)
+  // if creating a student, do not auto-assign any assignments
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(s))
+  emitUpdate()
+}
+
+export function removeUser(userId) {
+  const s = loadState()
+  // remove user
+  s.users = s.users.filter(u => u.id !== userId)
+  // remove submissions for this user
+  s.submissions = s.submissions.filter(sub => sub.studentId !== userId)
+  // remove from assignedTo arrays
+  s.assignments = s.assignments.map(a => ({ ...a, assignedTo: a.assignedTo.filter(id => id !== userId) }))
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(s))
+  emitUpdate()
+}
+
+export function removeAssignment(assignmentId) {
+  const s = loadState()
+  s.assignments = s.assignments.filter(a => a.id !== assignmentId)
+  s.submissions = s.submissions.filter(sub => sub.assignmentId !== assignmentId)
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(s))
+  emitUpdate()
 }

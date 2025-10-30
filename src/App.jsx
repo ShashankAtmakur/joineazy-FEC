@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import Dashboard from './components/Dashboard'
-import { loadState, saveState, seedDataIfNeeded } from './utils/data'
+import { loadState, saveState, seedDataIfNeeded, getUsers } from './utils/data'
+import Header from './components/Header'
 
 export default function App() {
   const [role, setRole] = useState('student')
@@ -14,8 +15,24 @@ export default function App() {
     // pick a default user for each role
     const defaultStudent = state.users.find(u => u.role === 'student')
     const defaultAdmin = state.users.find(u => u.role === 'admin')
-    setCurrentUserId(role === 'student' ? defaultStudent.id : defaultAdmin.id)
+    setCurrentUserId(role === 'student' ? defaultStudent?.id : defaultAdmin?.id)
   }, [])
+
+  useEffect(() => {
+    // listen to external updates from data utils so UI refreshes when data.js mutates localStorage
+    function onUpdate() {
+      const state = loadState()
+      setUsers(state.users)
+      // if current user was removed, pick a default for role
+      const exists = state.users.find(u => u.id === currentUserId)
+      if (!exists) {
+        const defaultUser = state.users.find(u => u.role === role)
+        if (defaultUser) setCurrentUserId(defaultUser.id)
+      }
+    }
+    window.addEventListener('joineazy:update', onUpdate)
+    return () => window.removeEventListener('joineazy:update', onUpdate)
+  }, [currentUserId, role])
 
   useEffect(() => {
     // if role changes, switch currentUser to a default for that role
@@ -33,39 +50,38 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="container mx-auto p-4">
-        <div className="flex items-center justify-between mb-4">
-          <h1 className="text-2xl font-semibold">Joineazy — Assignments Dashboard</h1>
-          <div className="flex gap-2 items-center">
-            <label className="text-sm text-gray-600">Role</label>
-            <select
-              value={role}
-              onChange={e => setRole(e.target.value)}
-              className="border rounded px-2 py-1"
-            >
-              <option value="student">Student</option>
-              <option value="admin">Admin</option>
-            </select>
+      <Header>
+        <div className="flex items-center gap-2">
+          <label className="text-sm text-gray-600">Role</label>
+          <select
+            value={role}
+            onChange={e => setRole(e.target.value)}
+            className="border rounded px-2 py-1"
+          >
+            <option value="student">Student</option>
+            <option value="admin">Admin</option>
+          </select>
 
-            <label className="text-sm text-gray-600">User</label>
-            <select
-              value={currentUserId ?? ''}
-              onChange={e => setCurrentUserId(e.target.value)}
-              className="border rounded px-2 py-1"
-            >
-              {users
-                .filter(u => u.role === role)
-                .map(u => (
-                  <option key={u.id} value={u.id}>
-                    {u.name}
-                  </option>
-                ))}
-            </select>
-          </div>
+          <label className="text-sm text-gray-600">User</label>
+          <select
+            value={currentUserId ?? ''}
+            onChange={e => setCurrentUserId(e.target.value)}
+            className="border rounded px-2 py-1"
+          >
+            {getUsers()
+              .filter(u => u.role === role)
+              .map(u => (
+                <option key={u.id} value={u.id}>
+                  {u.name}
+                </option>
+              ))}
+          </select>
         </div>
+      </Header>
 
+      <main className="container mx-auto px-4 py-6">
         <Dashboard role={role} userId={currentUserId} />
-      </div>
+      </main>
     </div>
   )
 }

@@ -66,6 +66,12 @@ npm run preview
 - Admin view shows per-assignment progress calculated from the assignments' submissions. Progress is visualized via `ProgressBar`.
 - Responsive: Tailwind grid and utility classes keep layout friendly on mobile and desktop.
 
+Design polish & mobile compatibility
+
+- Updated UI to a cleaner, professional look: header, brand color, improved spacing and shadows.
+- Mobile-first responsive layouts: grids collapse to single column on small screens, modals become bottom sheets on mobile, and action buttons are touch-friendly.
+- Accessibility improvements: progress bars expose ARIA attributes and modal supports Escape key to close.
+
 ## How data is modeled (brief)
 
 - `users` — array of { id, name, role }
